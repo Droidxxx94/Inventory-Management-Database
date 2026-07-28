@@ -1,12 +1,11 @@
 
-import pg8000
+import sqlite3
 
-def get_connection():
-    return pg8000.connect(
-        database="inventory_db",
-        user="u0_a829",
-        password="your_password",
-        host="localhost",
-        port=5432
-    )
+def connect_db():
+    try:
+        conn = sqlite3.connect('inventory/database/inventory.db')
+        return conn
+    except Exception as e:
+        print("Database connection failed:", e)
+        return None
 
