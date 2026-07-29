@@ -1,36 +1,33 @@
 import sqlite3
 from inventory.db import connect_db
+from inventory.reports import (
+    get_inventory_value,
+    get_low_stock_items,
+    get_supplier_counts,
+    get_category_summary,
+    get_top_value_products
+)
 
 # ---------------------------------------------------------
 # Add timestamp column if missing
 # ---------------------------------------------------------
-def add_timestamp_column():
-    conn = connect_db()
-    if conn:
-        cur = conn.cursor()
-        try:
-            cur.execute("""
-                ALTER TABLE transactions
-                ADD COLUMN timestamp TEXT DEFAULT CURRENT_TIMESTAMP
-            """)
-            conn.commit()
-            print("Timestamp column added.")
-        except sqlite3.OperationalError:
-            # Column already exists
-            pass
-        finally:
-            cur.close()
-            conn.close()
+def add_timestamp_column(conn):
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            ALTER TABLE transactions
+            ADD COLUMN timestamp TEXT DEFAULT CURRENT_TIMESTAMP
+        """)
+        conn.commit()
+        print("Timestamp column added.")
+    except sqlite3.OperationalError:
+        # Column already exists
+        pass
 
 # ---------------------------------------------------------
 # Show all products
 # ---------------------------------------------------------
-def show_products():
-    conn = connect_db()
-    if not conn:
-        print("Database connection failed.")
-        return
-
+def show_products(conn):
     cur = conn.cursor()
     try:
         cur.execute("SELECT * FROM products")
@@ -42,19 +39,11 @@ def show_products():
         print()
     except Exception as e:
         print("Error showing products:", e)
-    finally:
-        cur.close()
-        conn.close()
 
 # ---------------------------------------------------------
 # Add a new product
 # ---------------------------------------------------------
-def add_product():
-    conn = connect_db()
-    if not conn:
-        print("Database connection failed.")
-        return
-
+def add_product(conn):
     cur = conn.cursor()
     try:
         name = input("Product name: ")
@@ -70,19 +59,11 @@ def add_product():
         print("Product added successfully.")
     except Exception as e:
         print("Error adding product:", e)
-    finally:
-        cur.close()
-        conn.close()
 
 # ---------------------------------------------------------
 # Update an existing product
 # ---------------------------------------------------------
-def update_product():
-    conn = connect_db()
-    if not conn:
-        print("Database connection failed.")
-        return
-
+def update_product(conn):
     cur = conn.cursor()
     try:
         product_id = input("Enter product ID to update: ")
@@ -110,19 +91,11 @@ def update_product():
         print("Product updated successfully.")
     except Exception as e:
         print("Error updating product:", e)
-    finally:
-        cur.close()
-        conn.close()
 
 # ---------------------------------------------------------
 # Delete a product
 # ---------------------------------------------------------
-def delete_product():
-    conn = connect_db()
-    if not conn:
-        print("Database connection failed.")
-        return
-
+def delete_product(conn):
     cur = conn.cursor()
     try:
         product_id = input("Enter product ID to delete: ")
@@ -145,19 +118,11 @@ def delete_product():
             print("Delete canceled.")
     except Exception as e:
         print("Error deleting product:", e)
-    finally:
-        cur.close()
-        conn.close()
 
 # ---------------------------------------------------------
 # Record stock movement (transaction)
 # ---------------------------------------------------------
-def record_stock_movement():
-    conn = connect_db()
-    if not conn:
-        print("Database connection failed.")
-        return
-
+def record_stock_movement(conn):
     cur = conn.cursor()
     try:
         product_id = input("Product ID: ")
@@ -173,19 +138,11 @@ def record_stock_movement():
         print("Stock movement recorded.")
     except Exception as e:
         print("Error recording movement:", e)
-    finally:
-        cur.close()
-        conn.close()
 
 # ---------------------------------------------------------
 # View all transactions
 # ---------------------------------------------------------
-def view_transactions():
-    conn = connect_db()
-    if not conn:
-        print("Database connection failed.")
-        return
-
+def view_transactions(conn):
     cur = conn.cursor()
     try:
         cur.execute("""
@@ -203,47 +160,92 @@ def view_transactions():
         print()
     except Exception as e:
         print("Error viewing transactions:", e)
-    finally:
-        cur.close()
-        conn.close()
+
+# ---------------------------------------------------------
+# Reports & Analytics Menu
+# ---------------------------------------------------------
+def show_reports_menu(conn):
+    print("\n=== Reports & Analytics ===")
+    print("1. Total Inventory Value")
+    print("2. Low Stock Items")
+    print("3. Supplier Summary")
+    print("4. Category Summary")
+    print("5. Top Value Products")
+    print("0. Back")
+
+    option = input("Choose an option: ")
+
+    if option == "1":
+        print("Total Inventory Value:", get_inventory_value(conn))
+
+    elif option == "2":
+        for item in get_low_stock_items(conn):
+            print(item)
+
+    elif option == "3":
+        for row in get_supplier_counts(conn):
+            print(row)
+
+    elif option == "4":
+        for row in get_category_summary(conn):
+            print(row)
+
+    elif option == "5":
+        for row in get_top_value_products(conn):
+            print(row)
+
+    elif option == "0":
+        return
 
 # ---------------------------------------------------------
 # Main Menu
 # ---------------------------------------------------------
-def menu():
+def main_menu(conn):
     while True:
-        print("\n=== Inventory Menu ===")
+        print("\n=== Inventory Management System ===")
         print("1. Show Products")
         print("2. Add Product")
         print("3. Update Product")
         print("4. Delete Product")
         print("5. Record Stock Movement")
         print("6. View Transactions")
-        print("7. Exit")
+        print("7. Print Goodbye / Exit")
+        print("8. Reports & Analytics")
 
         choice = input("Choose an option: ")
 
         if choice == "1":
-            show_products()
+            show_products(conn)
+
         elif choice == "2":
-            add_product()
+            add_product(conn)
+
         elif choice == "3":
-            update_product()
+            update_product(conn)
+
         elif choice == "4":
-            delete_product()
+            delete_product(conn)
+
         elif choice == "5":
-            record_stock_movement()
+            record_stock_movement(conn)
+
         elif choice == "6":
-            view_transactions()
+            view_transactions(conn)
+
         elif choice == "7":
             print("Goodbye!")
             break
+
+        elif choice == "8":
+            show_reports_menu(conn)
+
         else:
-            print("Invalid choice. Try again.")
+            print("Invalid option. Please try again.")
 
 # ---------------------------------------------------------
 # Program Entry Point
 # ---------------------------------------------------------
 if __name__ == "__main__":
-    add_timestamp_column()
-    menu()
+    conn = connect_db()
+    add_timestamp_column(conn)
+    main_menu(conn)
