@@ -40,7 +40,42 @@ The project is intentionally modular, allowing future expansion into analytics, 
 ---
 
 ## 📁 Project Structure
----
+
+The project is organized into a clean, modular layout that separates application logic, database operations, and documentation. This makes the system easier to maintain, extend, and scale.
+
+inventory_management_database/
+│
+├── main.py
+│   - The main entry point of the application.
+│   - Handles user interaction, menu logic, and calls functions from the inventory package.
+│
+├── inventory/
+│   ├── db.py
+│   │   - Core database module.
+│   │   - Handles SQLite connection, table creation, CRUD operations, and query logic.
+│   │   - Central place for all data-access logic.
+│   │
+│   └── __init__.py
+│       - Marks the folder as a Python package.
+│       - Allows imports like: from inventory.db import connect_db
+│
+├── README.md
+│   - Full project documentation.
+│   - Includes overview, setup instructions, tech stack, skills demonstrated, and future enhancements.
+│
+└── (future folders planned)
+    ├── analytics/
+    │   - Power BI exports, SQL reporting scripts, KPI calculations.
+    │
+    ├── api/
+    │   - REST API endpoints for external integrations.
+    │
+    ├── data/
+    │   - CSV import/export, sample datasets, logs.
+    │
+    └── tests/
+        - Automated tests for database logic and workflows.
+
 
 ## ▶️ How to Run the Project
 
