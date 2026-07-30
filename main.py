@@ -197,6 +197,125 @@ def show_reports_menu(conn):
     elif option == "0":
         return
 
+# ============================
+# Supplier Management Functions
+# ============================
+
+def add_supplier(conn):
+    cur = conn.cursor()
+    try:
+        name = input("Supplier name: ")
+        contact = input("Contact info: ")
+
+        cur.execute("""
+            INSERT INTO suppliers (name, contact)
+            VALUES (?, ?)
+        """, (name, contact))
+
+        conn.commit()
+        print("Supplier added successfully.")
+    except Exception as e:
+        print("Error adding supplier:", e)
+
+
+def view_suppliers(conn):
+    cur = conn.cursor()
+    try:
+        cur.execute("SELECT * FROM suppliers")
+        rows = cur.fetchall()
+
+        print("\n=== Supplier List ===")
+        for row in rows:
+            print(f"ID: {row[0]}, Name: {row[1]}, Contact: {row[2]}")
+        print()
+    except Exception as e:
+        print("Error viewing suppliers:", e)
+
+
+def edit_supplier(conn):
+    cur = conn.cursor()
+    try:
+        supplier_id = input("Enter Supplier ID to edit: ")
+
+        cur.execute("SELECT * FROM suppliers WHERE id = ?", (supplier_id,))
+        supplier = cur.fetchone()
+
+        if not supplier:
+            print("Supplier not found.")
+            return
+
+        print(f"Current Name: {supplier[1]}")
+        print(f"Current Contact: {supplier[2]}")
+
+        new_name = input("New name (leave blank to keep current): ")
+        new_contact = input("New contact (leave blank to keep current): ")
+
+        if new_name == "":
+            new_name = supplier[1]
+        if new_contact == "":
+            new_contact = supplier[2]
+
+        cur.execute("""
+            UPDATE suppliers
+            SET name = ?, contact = ?
+            WHERE id = ?
+        """, (new_name, new_contact, supplier_id))
+
+        conn.commit()
+        print("Supplier updated successfully.")
+
+    except Exception as e:
+        print("Error editing supplier:", e)
+
+def delete_supplier(conn):
+    cur = conn.cursor()
+    try:
+        supplier_id = input("Enter Supplier ID to delete: ")
+
+        cur.execute("SELECT * FROM suppliers WHERE id = ?", (supplier_id,))
+        supplier = cur.fetchone()
+
+        if not supplier:
+            print("Supplier not found.")
+            return
+
+        confirm = input(f"Are you sure you want to delete '{supplier[1]}'? (y/n): ")
+        if confirm.lower() != "y":
+            print("Deletion cancelled.")
+            return
+
+        cur.execute("DELETE FROM suppliers WHERE id = ?", (supplier_id,))
+        conn.commit()
+        print("Supplier deleted successfully.")
+
+    except Exception as e:
+        print("Error deleting supplier:", e)
+
+def search_supplier(conn):
+    cur = conn.cursor()
+    try:
+        keyword = input("Enter supplier name or keyword: ")
+
+        cur.execute("""
+            SELECT * FROM suppliers
+            WHERE name LIKE ?
+        """, ('%' + keyword + '%',))
+
+        rows = cur.fetchall()
+
+        if not rows:
+            print("No suppliers found.")
+            return
+
+        print("\n=== Search Results ===")
+        for row in rows:
+            print(f"ID: {row[0]}, Name: {row[1]}, Contact: {row[2]}")
+        print()
+
+    except Exception as e:
+        print("Error searching suppliers:", e)
+
+                      
 # ---------------------------------------------------------
 # Main Menu
 # ---------------------------------------------------------
@@ -211,7 +330,7 @@ def main_menu(conn):
         print("6. View Transactions")
         print("7. Print Goodbye / Exit")
         print("8. Reports & Analytics")
-
+        print("9. Supplier Management")
         choice = input("Choose an option: ")
 
         if choice == "1":
@@ -239,8 +358,40 @@ def main_menu(conn):
         elif choice == "8":
             show_reports_menu(conn)
 
+        elif choice == "9":
+            supplier_menu(conn) 
+
         else:
             print("Invalid option. Please try again.")
+
+
+def supplier_menu(conn):
+    while True:
+        print("\n=== Supplier Management ===")
+        print("1. Add Supplier")
+        print("2. View Suppliers")
+        print("3. Edit Supplier")
+        print("4. Delete Supplier")
+        print("5. Search Supplier")
+        print("6. Back to Main Menu")
+
+        choice = input("Choose an option: ")
+
+        if choice == "1":
+            add_supplier(conn)
+        elif choice == "2":
+            view_suppliers(conn)
+        elif choice == "3":
+            edit_supplier(conn)
+        elif choice == "4":
+            delete_supplier(conn)
+        elif choice == "5":
+            search_supplier(conn)
+        elif choice == "6":
+            break
+        else:
+            print("Invalid option. Please try again.")
+
 
 # ---------------------------------------------------------
 # Program Entry Point
