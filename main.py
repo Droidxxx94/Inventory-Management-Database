@@ -8,6 +8,21 @@ from inventory.reports import (
     get_top_value_products
 )
 
+# Terminal color codes
+RED = "\033[91m" 
+YELLOW = "\033[93m"
+GREEN = "\033[92m"
+RESET = "\033[0m"
+
+CRITICAL_ICON = "❗"
+WARNING_ICON = "⚠️"
+GOOD_ICON = "✔️"
+
+CRITICAL_ICON = f"{RED}❗{RESET}"
+WARNING_ICON  = f"{YELLOW}⚠️{RESET}"
+GOOD_ICON     = f"{GREEN}✔️{RESET}"
+
+
 # ---------------------------------------------------------
 # Add timestamp column if missing
 # ---------------------------------------------------------
@@ -35,18 +50,35 @@ def view_products(conn):
         FROM products
         LEFT JOIN suppliers ON products.supplier_id = suppliers.id
         LEFT JOIN categories ON products.category_id = categories.id
+        ORDER BY products.id
     """)
+
     rows = cur.fetchall()
+
+    if not rows:
+        print("No products found.")
+        return
 
     print("\n=== Product List ===")
     for row in rows:
-        print(f"ID: {row[0]}")
+        qty = row[2]
+
+        # Color logic
+        if qty == 0:
+            icon = CRITICAL_ICON
+        elif qty < 5:
+            icon =WARNING_ICON
+        else:
+            icon = GOOD_ICON
+
+        print(f"{icon}ID: {row[0]}")
         print(f"Name: {row[1]}")
         print(f"Quantity: {row[2]}")
         print(f"Unit Price: ${row[3]:.2f}")
         print(f"Supplier: {row[4]}")
-        print(f"Category: {row[5]}")
+        print(f"Category: {row[5]}{RESET}")
         print("------------------------")
+
 
 
 # ---------------------------------------------------------
@@ -258,6 +290,48 @@ def show_reports_menu(conn):
 
     elif option == "0":
         return
+
+def dashboard_summary(conn):
+    print("\n=== Dashboard Summary ===")
+
+    # Total inventory value
+    total_value = get_inventory_value(conn)
+    print(f"Total Inventory Value: ${total_value:.2f}")
+
+    # Low stock count
+    low_stock_items = get_low_stock_items(conn)
+
+    if len(low_stock_items) == 0:
+        print(f"Low Stock Items: {GREEN}0 (All good){RESET}")
+    elif len(low_stock_items) < 5:
+        print(f"Low Stock Items: {YELLOW}{len(low_stock_items)} (Monitor soon){RESET}")
+    else:
+        print(f"Low Stock Items: {RED}{len(low_stock_items)} (Critical){RESET}")
+
+    # Supplier count
+    supplier_counts = get_supplier_counts(conn)
+    print(f"Total Suppliers: {len(supplier_counts)}")
+
+    # Category count
+    category_summary = get_category_summary(conn)
+    print(f"Total Categories: {len(category_summary)}")
+
+    # Top 5 highest-value products
+    top_products = get_top_value_products(conn)
+    print("\nTop Value Products:")
+    for p in top_products[:5]:
+        value = p[1] * p[2]  # qty * unit_price
+
+        color = GREEN
+        if value > 500:
+            color = YELLOW
+        if value > 2000:
+            color = RED
+
+        print(f"- {color}{p[0]} (${p[2]:.2f} each, Qty: {p[1]}, Value: ${value:.2f}){RESET}")
+
+    print("\nDashboard loaded successfully.\n")
+
 
 def choose_category(conn):
     cur = conn.cursor()
@@ -535,10 +609,11 @@ def search_category(conn):
     except Exception as e:
         print("Error searching categories:", e)
 
-    def choose_category(conn):
-        cur = conn.cursor()
-        cur.execute("SELECT id, name FROM categories")
-        rows = cur.fetchall()
+
+def choose_category(conn):
+    cur = conn.cursor()
+    cur.execute("SELECT id, name FROM categories")
+    rows = cur.fetchall()
 
     if not rows:
         print("No categories found. Add one first.")
@@ -557,7 +632,7 @@ def search_category(conn):
                 print("Invalid category ID. Try again.")
         except ValueError:
             print("Please enter a valid number.")
-  
+
 
 def supplier_menu(conn):
     while True:
@@ -586,6 +661,194 @@ def supplier_menu(conn):
         else:
             print("Invalid option. Please try again.")
 
+def search_products_by_price_range(conn):
+    cur = conn.cursor()
+
+    print("\n=== Search by Price Range ===")
+
+    try:
+        min_price = float(input("Minimum price: "))
+        max_price = float(input("Maximum price: "))
+    except ValueError:
+        print("Invalid input. Please enter numbers.")
+        return
+
+    cur.execute("""
+        SELECT products.id, products.name, products.quantity, products.unit_price,
+               suppliers.name, categories.name
+        FROM products
+        LEFT JOIN suppliers ON products.supplier_id = suppliers.id
+        LEFT JOIN categories ON products.category_id = categories.id
+        WHERE products.unit_price BETWEEN ? AND ?
+        ORDER BY products.unit_price ASC
+    """, (min_price, max_price))
+
+    rows = cur.fetchall()
+
+    if not rows:
+        print("No products found in this price range.")
+        return
+
+    print(f"\n=== Products priced between ${min_price} and ${max_price} ===")
+    for row in rows:
+        print(f"ID: {row[0]}")
+        print(f"Name: {row[1]}")
+        print(f"Quantity: {row[2]}")
+        print(f"Unit Price: ${row[3]:.2f}")
+        print(f"Supplier: {row[4]}")
+        print(f"Category: {row[5]}")
+        print("------------------------")
+
+def search_low_stock_products(conn):
+    cur = conn.cursor()
+
+    # You already have low-stock logic in reports, but let's do it directly here
+    # so it matches your product search formatting.
+
+    try:
+        threshold = int(input("Enter low-stock threshold (e.g., 5): "))
+    except ValueError:
+        print("Invalid number.")
+        return
+
+    cur.execute("""
+        SELECT products.id, products.name, products.quantity, products.unit_price,
+               suppliers.name, categories.name
+        FROM products
+        LEFT JOIN suppliers ON products.supplier_id = suppliers.id
+        LEFT JOIN categories ON products.category_id = categories.id
+        WHERE products.quantity <= ?
+        ORDER BY products.quantity ASC
+    """, (threshold,))
+
+    rows = cur.fetchall()
+
+    if not rows:
+        print("No low-stock products found.")
+        return
+
+    print(f"\n=== Products with Quantity <= {threshold} ===")
+    for row in rows:
+        print(f"ID: {row[0]}")
+        print(f"Name: {row[1]}")
+        print(f"Quantity: {row[2]}")
+        print(f"Unit Price: ${row[3]:.2f}")
+        print(f"Supplier: {row[4]}")
+        print(f"Category: {row[5]}")
+        print("------------------------")
+
+def search_products_by_category_name(conn):
+    cur = conn.cursor()
+
+    keyword = input("Enter category name: ").strip()
+
+    # Find matching categories
+    cur.execute("""
+        SELECT id, name
+        FROM categories
+        WHERE name LIKE ?
+    """, (f"%{keyword}%",))
+
+    categories = cur.fetchall()
+
+    if not categories:
+        print("No categories found with that name.")
+        return
+
+    print("\n=== Matching Categories ===")
+    for cat in categories:
+        print(f"{cat[0]} - {cat[1]}")
+
+    # If multiple categories match, ask user which one to use
+    try:
+        category_id = int(input("Enter the Category ID to view products: "))
+    except ValueError:
+        print("Invalid input.")
+        return
+
+    # Fetch products in that category
+    cur.execute("""
+        SELECT products.id, products.name, products.quantity, products.unit_price,
+               suppliers.name, categories.name
+        FROM products
+        LEFT JOIN suppliers ON products.supplier_id = suppliers.id
+        LEFT JOIN categories ON products.category_id = categories.id
+        WHERE products.category_id = ?
+    """, (category_id,))
+
+    rows = cur.fetchall()
+
+    if not rows:
+        print("No products found in this category.")
+        return
+
+    print(f"\n=== Products in Category '{keyword}' ===")
+    for row in rows:
+        print(f"ID: {row[0]}")
+        print(f"Name: {row[1]}")
+        print(f"Quantity: {row[2]}")
+        print(f"Unit Price: ${row[3]:.2f}")
+        print(f"Supplier: {row[4]}")
+        print(f"Category: {row[5]}")
+        print("------------------------")
+
+def search_products_by_inventory_value(conn):
+    cur = conn.cursor()
+
+    print("\n=== Search by Inventory Value (Quantity × Price) ===")
+
+    try:
+        min_value = float(input("Minimum inventory value: "))
+        max_value = float(input("Maximum inventory value: "))
+    except ValueError:
+        print("Invalid input. Please enter numbers.")
+        return
+
+    cur.execute("""
+        SELECT products.id, products.name, products.quantity, products.unit_price,
+               (products.quantity * products.unit_price) AS inventory_value,
+               suppliers.name, categories.name
+        FROM products
+        LEFT JOIN suppliers ON products.supplier_id = suppliers.id
+        LEFT JOIN categories ON products.category_id = categories.id
+        WHERE inventory_value BETWEEN ? AND ?
+        ORDER BY inventory_value DESC
+    """, (min_value, max_value))
+
+    rows = cur.fetchall()
+
+    if not rows:
+        print("No products found in this inventory value range.")
+        return
+
+    print(f"\n=== Products with Inventory Value between ${min_value} and ${max_value} ===")
+    for row in rows:
+        print(f"ID: {row[0]}")
+        print(f"Name: {row[1]}")
+        print(f"Quantity: {row[2]}")
+        print(f"Unit Price: ${row[3]:.2f}")
+        print(f"Inventory Value: ${row[4]:.2f}")
+        print(f"Supplier: {row[5]}")
+        print(f"Category: {row[6]}")
+        print("------------------------")
+
+def make_bar_graph(quantity, max_length=20):
+    if quantity <= 0:
+        filled = 0
+    else:
+        filled = int((quantity / max_length) * max_length)
+        if filled > max_length:
+            filled = max_length
+
+    empty = max_length - filled
+
+    bar = "█" * filled + "░" * empty
+    return bar
+
+
+
+
+
 def category_menu(conn):
     while True:
         print("\n=== Category Management ===")
@@ -613,6 +876,53 @@ def category_menu(conn):
         else:
             print("Invalid option. Please try again.")
 
+def search_products_by_supplier(conn):
+    cur = conn.cursor()
+
+    # Show supplier list
+    cur.execute("SELECT id, name FROM suppliers")
+    suppliers = cur.fetchall()
+
+    if not suppliers:
+        print("No suppliers found.")
+        return
+
+    print("\n=== Suppliers ===")
+    for sup in suppliers:
+        print(f"{sup[0]}. {sup[1]}")
+
+    try:
+        supplier_id = int(input("Enter Supplier ID: "))
+    except ValueError:
+        print("Invalid input.")
+        return
+
+    cur.execute("""
+        SELECT products.id, products.name, products.quantity, products.unit_price,
+               suppliers.name, categories.name
+        FROM products
+        LEFT JOIN suppliers ON products.supplier_id = suppliers.id
+        LEFT JOIN categories ON products.category_id = categories.id
+        WHERE products.supplier_id = ?
+    """, (supplier_id,))
+
+    rows = cur.fetchall()
+
+    if not rows:
+        print("No products found for this supplier.")
+        return
+
+    print("\n=== Products from Supplier ===")
+    for row in rows:
+        print(f"ID: {row[0]}")
+        print(f"Name: {row[1]}")
+        print(f"Quantity: {row[2]}")
+        print(f"Unit Price: ${row[3]:.2f}")
+        print(f"Supplier: {row[4]}")
+        print(f"Category: {row[5]}")
+        print("------------------------")
+
+
 def display_results(results):
     if not results:
         print("No products found.")
@@ -627,7 +937,12 @@ def search_menu(conn):
         print("\n=== Product Search ===")
         print("1. Search by Name or ID")
         print("2. Search by Category")
-        print("3. Back to Main Menu")
+        print("3. Search by Supplier")
+        print("4. Search by Price Range")
+        print("5. Search Low-Stock Products")
+        print("6. Search by Category Name")
+        print("7. Search by Inventory Value")
+        print("8. Back to Main Menu")
 
         choice = input("Choose an option: ")
 
@@ -640,6 +955,21 @@ def search_menu(conn):
             search_products_by_category(conn)
 
         elif choice == "3":
+            search_products_by_supplier(conn)
+
+        elif choice == "4":
+            search_products_by_price_range(conn)
+
+        elif choice == "5":
+            search_low_stock_products(conn)
+
+        elif choice == "6":
+            search_products_by_category_name(conn)
+
+        elif choice == "7":
+            search_products_by_inventory_value(conn)
+
+        elif choice == "8":
             break
 
         else:
@@ -711,6 +1041,7 @@ def main_menu(conn):
         print("9. Supplier Management")
         print("10. Search Products")
         print("11. Category Management")
+        print("12. Dashboard Summary")
         choice = input("Choose an option: ")
 
         if choice == "1":
@@ -746,6 +1077,9 @@ def main_menu(conn):
 
         elif choice == "11":
             category_menu(conn)
+
+        elif choice == "12":
+            dashboard_summary(conn)
 
 
         else:
