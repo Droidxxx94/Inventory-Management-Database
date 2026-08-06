@@ -1,18 +1,15 @@
+# db.py
 
 import sqlite3
 
 def connect_db():
-    try:
-        conn = sqlite3.connect('inventory.db')
-        return conn
-    except Exception as e:
-        print("Database connection failed:", e)
-        return None
+    return sqlite3.connect("inventory.db")
+
 
 def create_tables(conn):
     cur = conn.cursor()
 
-    # Products table (already exists)
+    # Products
     cur.execute("""
         CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,13 +17,11 @@ def create_tables(conn):
             quantity INTEGER NOT NULL,
             unit_price REAL NOT NULL,
             supplier_id INTEGER,
-            category_id INTEGER,
-            FOREIGN KEY (supplier_id) REFERENCES suppliers(id),
-            FOREIGN KEY (category_id) REFERENCES categories(id)
+            category_id INTEGER
         )
     """)
 
-    # Suppliers table
+    # Suppliers
     cur.execute("""
         CREATE TABLE IF NOT EXISTS suppliers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,7 +30,7 @@ def create_tables(conn):
         )
     """)
 
-    # Categories table
+    # Categories
     cur.execute("""
         CREATE TABLE IF NOT EXISTS categories (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,17 +38,15 @@ def create_tables(conn):
         )
     """)
 
-    # Transactions table (already exists)
+    # Transactions
     cur.execute("""
         CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             product_id INTEGER,
             change_amount INTEGER,
             reason TEXT,
-            timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (product_id) REFERENCES products(id)
+            timestamp TEXT DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
-    conn.commit()        
-
+    conn.commit()
