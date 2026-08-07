@@ -21,6 +21,14 @@ from inventory.search import (
 )
 from inventory.reports import dashboard_summary, export_products_to_csv
 
+from dashboard import view_dashboard
+
+from dashboard import dashboard_menu
+
+from dashboard import auto_snapshot
+auto_snapshot()
+
+
 
 # ---------------------------------------------------------
 # Product Menu
@@ -214,6 +222,7 @@ def main():
         print("3. Categories")
         print("4. Search")
         print("5. Reports")
+        print("6. Inventory Dashboard")
         print("0. Exit")
 
         choice = input("Choose an option: ")
@@ -228,6 +237,8 @@ def main():
             search_menu(conn)
         elif choice == "5":
             reports_menu(conn)
+        elif choice == "6":
+            dashboard_menu(conn)
         elif choice == "0":
             print("Goodbye!")
             break

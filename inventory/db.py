@@ -49,4 +49,15 @@ def create_tables(conn):
         )
     """)
 
+    # Inventory history table
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS inventory_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            snapshot_date TEXT NOT NULL,
+            total_value REAL NOT NULL
+        );
+    """)
+
+
     conn.commit()
+    conn.close()
