@@ -1,104 +1,188 @@
-# 📦 Inventory Management Database
-A modular, Python‑based inventory management system designed to track products, suppliers, categories, stock levels, and generate useful reports. Built with SQLite for storage and organized into clean, maintainable modules.
+# 📦 Inventory Management & Analytics Dashboard  
+A clean, professional Python + SQLite inventory system with advanced analytics, forecasting, and visualization tools. Designed for real-world inventory workflows and portfolio-quality presentation.
 
 ---
 
-## 🚀 Features
+## ⭐ Overview  
+This project is a complete inventory management dashboard featuring:
 
-### Product Management
-- Add, edit, delete products
-- Restock or reduce inventory
-- Track quantity, price, category, and supplier
+- Full CRUD operations  
+- Daily snapshot tracking  
+- Advanced analytics  
+- Forecasting & trend modeling  
+- ABC & Pareto analysis  
+- Stockout risk prediction  
+- Multiple charts & visualizations  
+- Excel export  
+- Organized CLI dashboard  
 
-### Supplier Management
-- Add, edit, delete suppliers
-- Search suppliers by name
-
-### Category Management
-- Add, edit, delete categories
-- Search categories by name
-
-### Search Tools
-- Search products by category
-- Search products by supplier
-- Search by price range
-- Low‑stock product search
-- Search by category name
-- Search by inventory value
-
-### Reports & Analytics
-- Dashboard summary
-- CSV export for products (new feature!)
+Everything is built in pure Python with SQLite for storage and Matplotlib for charts.
 
 ---
 
-## 🗂 Project Structure
+## 🗂️ Project Structure
 
-Inventory Management Database/
-│
-├── .gitignore
-├── inventory.db
-├── README.md
-├── token.txt
-│
-└── inventory/
-    ├── __init__.py
-    ├── main.py
-    ├── db.py
-    ├── utils.py
-    ├── products.py
-    ├── suppliers.py
-    ├── categories.py
-    ├── search.py
-    ├── reports.py
+    inventory/
+    │
+    ├── dashboard.py        # Main dashboard, analytics, charts
+    ├── database.py         # SQLite CRUD operations
+    ├── inventory.db        # Product database
+    ├── snapshots.db        # Daily snapshot history
+    └── README.md           # Project documentation
 
 ---
 
-## 🛠 Technologies Used
-- Python 3
-- SQLite (local database)
-- CSV module (for export)
-- Modular architecture for clean, scalable code
+## 📦 Inventory Features
+
+### Core Management
+- Add products  
+- Update products  
+- Delete products  
+- View products  
+- Track categories  
+- Track suppliers  
+- Track price & quantity  
+
+### Database
+- SQLite backend  
+- Persistent product storage  
+- Daily snapshot database  
 
 ---
 
-## ▶️ How to Run
-
-1. Make sure you have Python installed
-2. Open the project in VS Code or Codespaces
-3. Run:
-
-   python inventory/main.py
-
-4. Use the menu to manage products, suppliers, categories, search, and reports
+## 📅 Daily Snapshot System
+- Automatically saves daily inventory value  
+- Prevents duplicate snapshots  
+- Stores historical trend data  
+- Supports manual or auto snapshot  
 
 ---
 
-## 📤 CSV Export
+## 📊 Analytics Engine
 
-You can export all products to a CSV file using:
+### General Analytics
+- Total inventory value  
+- Total product count  
+- Low stock count  
+- Inventory value by category  
+- Inventory value by supplier  
+- Top 5 products  
 
-Reports → Export Products to CSV
-
-This generates:
-
-products_export.csv
-
-in your project root.
-
----
-
-## 📌 Future Improvements
-- Export suppliers and categories to CSV
-- Add user login roles
-- Add inventory value charts
-- Add automatic low‑stock notifications
-- Add JSON or Excel export options
-- Add a GUI or web interface
+### Trend & Forecasting
+- Trend line analysis  
+- Moving average smoothing  
+- Linear regression forecast  
+- Confidence interval forecast  
+- Combined forecast chart  
+- Export forecast data to Excel  
 
 ---
 
-## 👤 Author
-**Nick**
-Aspiring Data Analyst & Python Developer  
-Building practical tools and learning through hands‑on projects.
+## 🔍 Advanced Inventory Analytics
+
+### ABC Analysis
+Classifies products into:
+- A – High-value, top contributors  
+- B – Medium-value  
+- C – Low-value, bulk items  
+
+### Pareto Analysis (80/20 Rule)
+Identifies the top 20% of products that generate 80% of total inventory value.
+
+### Stockout Risk Prediction
+Calculates:
+- Daily usage  
+- Days until stockout  
+- Risk level (HIGH / MEDIUM / LOW)  
+
+---
+
+## 📈 Charts & Visualizations
+
+- Category value chart  
+- Supplier value chart  
+- Top 5 products chart  
+- Inventory trend chart  
+- Moving average chart  
+- Forecast chart  
+- Confidence interval chart  
+- Combined forecast chart  
+- ABC analysis chart  
+- Pareto chart  
+- Stockout risk chart  
+
+All charts are generated using Matplotlib.
+
+---
+
+## 🔧 Installation
+
+### 1. Clone the repository
+    git clone <your-repo-url>
+
+### 2. Install dependencies
+    pip install matplotlib openpyxl
+
+### 3. Run the dashboard
+    python dashboard.py
+
+---
+
+## 🚀 Why This Project Matters
+This project demonstrates real inventory concepts used in:
+
+- Retail  
+- Warehousing  
+- Merchandising  
+- Supply chain  
+- Operations analytics  
+
+It’s perfect for:
+
+- Portfolio projects  
+- Resume enhancement  
+- Python + SQL learning  
+- Data analytics practice  
+
+---
+
+## 👨‍💻 About the Developer
+
+**Developer:** Nick  
+**Location:** Wisconsin, USA  
+**Role:** Aspiring Data Analyst  
+**Interests:** Python, SQL, data analytics, inventory systems, forecasting, and building real-world tools that solve practical problems.
+
+Nick is passionate about learning through hands-on projects and building tools that reflect real business workflows. This inventory management system showcases his dedication to improving his skills in Python, SQL, analytics, and data visualization — while creating something functional, organized, and professional.
+
+### 🛠️ Skills
+- Python  
+- SQL (SQLite)  
+- Data Analytics  
+- Forecasting & Trend Modeling  
+- Matplotlib Visualization  
+- Inventory Management Concepts  
+- Problem Solving  
+- Building CLI Tools  
+- Excel Data Export  
+- Regression & Confidence Intervals  
+
+---
+
+## 📌 Future Improvements (Optional)
+- Reorder point calculator  
+- Safety stock calculator  
+- Inventory heatmap  
+- Seasonal decomposition  
+- GUI version (Tkinter / PyQt)  
+- Chart export to PNG  
+
+---
+
+## 🏁 Final Notes
+This project is fully functional and complete.  
+All analytics tools, charts, and database features are implemented and tested.
+
+Clean. Organized. Professional.
+
+
